@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common'
-import { SpecialLecture } from '../entities/special-lecture.entity'
+import {
+    SpecialLecture,
+    SpecialLectureReservation,
+} from '../entities/special-lecture.entity'
 import { Repository } from 'typeorm/repository/Repository'
 import { InjectRepository } from '@nestjs/typeorm'
 
@@ -26,6 +29,46 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
     }
 
     async count(lectureId: number): Promise<number> {
-        return 0
+        return lectureId
+    }
+}
+
+export interface SpecialLectureReservationRepository {
+    read(userId: number): Promise<SpecialLectureReservation>
+
+    write(userId: number): Promise<SpecialLectureReservation>
+}
+
+@Injectable()
+export class SpecialLectureReservationCoreRepository
+    implements SpecialLectureReservationRepository
+{
+    constructor(
+        @InjectRepository(SpecialLectureReservation)
+        private specialLectureReservationRepository: Repository<SpecialLectureReservation>,
+    ) {}
+
+    async read(userId: number): Promise<SpecialLectureReservation> {
+        return {
+            id: 1,
+            userId: 1,
+            specialLecture: {
+                id: 1,
+                title: 'title',
+                specialLectureReservations: [],
+            },
+        }
+    }
+
+    async write(userId: number): Promise<SpecialLectureReservation> {
+        return {
+            id: 1,
+            userId: 1,
+            specialLecture: {
+                id: 1,
+                title: 'title',
+                specialLectureReservations: [],
+            },
+        }
     }
 }
