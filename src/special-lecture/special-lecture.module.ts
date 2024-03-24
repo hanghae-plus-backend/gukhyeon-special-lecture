@@ -30,8 +30,14 @@ import { SpecialLectureController } from './special-lecture.controller'
         SpecialLectureWriter,
         SpecialLectureReservationReader,
         SpecialLectureReservationWriter,
-        SpecialLectureCoreRepository, // Directly provided
-        SpecialLectureReservationCoreRepository,
+        {
+            provide: 'SpecialLectureRepository',
+            useClass: SpecialLectureCoreRepository,
+        },
+        {
+            provide: 'SpecialLectureReservationRepository',
+            useClass: SpecialLectureReservationCoreRepository,
+        },
     ],
     exports: [SpecialLectureService],
 })

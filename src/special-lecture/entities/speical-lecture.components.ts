@@ -8,6 +8,7 @@ import {
     SpecialLecture,
     SpecialLectureReservation,
 } from '../entities/special-lecture.entity'
+import { DataSource, EntityManager } from 'typeorm'
 
 @Injectable()
 export class SpecialLectureReader {
@@ -16,8 +17,18 @@ export class SpecialLectureReader {
         private repository: SpecialLectureRepository,
     ) {}
 
-    async read(lectureId: number): Promise<SpecialLecture> {
-        return this.repository.read(lectureId)
+    async read(
+        lectureId: number,
+        entityManager?: EntityManager,
+    ): Promise<SpecialLecture> {
+        if (entityManager) {
+            return entityManager.findOne(SpecialLecture, {
+                where: { id: lectureId },
+                relations: ['specialLectureReservations'],
+            })
+        } else {
+            return this.repository.read(lectureId)
+        }
     }
 }
 
@@ -53,10 +64,11 @@ export class SpecialLectureReservationWriter {
     ) {}
 
     async write(
+        entityManager: EntityManager,
         userId: number,
         specialLecture: SpecialLecture,
     ): Promise<SpecialLectureReservation> {
-        return this.repository.write(userId, specialLecture)
+        return this.repository.write(entityManager, userId, specialLecture)
     }
 }
 
@@ -67,6 +79,7 @@ export class SpecialLectureManager {
         private specialLectureWriter: SpecialLectureWriter,
         private specialLectureReservationReader: SpecialLectureReservationReader,
         private specialLectureReservationWriter: SpecialLectureReservationWriter,
+        private dataSource: DataSource,
     ) {}
 
     isAvailableUserId(userId: number): boolean {
@@ -90,29 +103,67 @@ export class SpecialLectureManager {
             throw new Error('유효하지 않은 유저 아이디입니다.')
         }
 
-        const currentSpecialLecture = await this.specialLectureReader.read(1) //현재 강의는 무조건 1번
+        return await this.dataSource.transaction(async entityManager => {
+            const specialLecture = await this.specialLectureReader.read(
+                1,
+                entityManager,
+            ) // Assuming this ID is dynamic in a real scenario
 
-        if (currentSpecialLecture.specialLectureReservations.length >= 30) {
-            throw new Error('강의가 꽉 찼습니다.')
-        }
+            if (
+                !specialLecture ||
+                specialLecture.specialLectureReservations.length >= 30
+            ) {
+                throw new Error('강의가 꽉 찼거나 찾을 수 없습니다.')
+            }
 
-        if (!currentSpecialLecture) {
-            throw new Error('강의를 찾을 수 없습니다.')
-        }
+            if (
+                specialLecture.specialLectureReservations.some(
+                    reservation => reservation.userId === userId,
+                )
+            ) {
+                throw new Error('이미 신청한 유저입니다.')
+            }
 
-        if (
-            currentSpecialLecture.specialLectureReservations.find(
-                reservation => reservation.userId === userId,
-            )
-        ) {
-            throw new Error('이미 신청한 유저입니다.')
-        }
+            // Here, use the entityManager to call the write method from the repository
+            // Ensure that your repository's write method can accept and use an EntityManager if provided
+            const reservation =
+                await this.specialLectureReservationWriter.write(
+                    entityManager,
+                    userId,
+                    specialLecture,
+                )
 
-        const reservation = await this.specialLectureReservationWriter.write(
-            userId,
-            currentSpecialLecture,
-        )
-
-        return reservation
+            return reservation
+        })
     }
+    // async writeReservation(userId: number): Promise<SpecialLectureReservation> {
+    //     if (!this.isAvailableUserId(userId)) {
+    //         throw new Error('유효하지 않은 유저 아이디입니다.')
+    //     }
+
+    //     const currentSpecialLecture = await this.specialLectureReader.read(1) //현재 강의는 무조건 1번
+
+    //     if (currentSpecialLecture.specialLectureReservations.length >= 30) {
+    //         throw new Error('강의가 꽉 찼습니다.')
+    //     }
+
+    //     if (!currentSpecialLecture) {
+    //         throw new Error('강의를 찾을 수 없습니다.')
+    //     }
+
+    //     if (
+    //         currentSpecialLecture.specialLectureReservations.find(
+    //             reservation => reservation.userId === userId,
+    //         )
+    //     ) {
+    //         throw new Error('이미 신청한 유저입니다.')
+    //     }
+
+    //     const reservation = await this.specialLectureReservationWriter.write(
+    //         userId,
+    //         currentSpecialLecture,
+    //     )
+
+    //     return reservation
+    // }
 }

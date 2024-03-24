@@ -5,6 +5,7 @@ import {
 } from '../entities/special-lecture.entity'
 import { Repository } from 'typeorm/repository/Repository'
 import { InjectRepository } from '@nestjs/typeorm'
+import { EntityManager } from 'typeorm'
 
 export interface SpecialLectureRepository {
     read(lectureId: number): Promise<SpecialLecture>
@@ -36,6 +37,7 @@ export interface SpecialLectureReservationRepository {
     read(userId: number): Promise<SpecialLectureReservation>
 
     write(
+        entityManager: EntityManager,
         userId: number,
         specialLecture: SpecialLecture,
     ): Promise<SpecialLectureReservation>
@@ -55,16 +57,15 @@ export class SpecialLectureReservationCoreRepository
     }
 
     async write(
+        entityManager: EntityManager,
         userId: number,
         specialLecture: SpecialLecture,
     ): Promise<SpecialLectureReservation> {
-        const reservationData = {
-            userId,
-            specialLecture: specialLecture,
-        }
+        const reservationData = new SpecialLectureReservation()
+        reservationData.userId = userId
+        reservationData.specialLecture = specialLecture
 
-        const newReservation =
-            this.specialLectureReservationRepository.create(reservationData)
-        return this.specialLectureReservationRepository.save(newReservation)
+        // Use the provided entityManager to save the reservation
+        return entityManager.save(reservationData)
     }
 }

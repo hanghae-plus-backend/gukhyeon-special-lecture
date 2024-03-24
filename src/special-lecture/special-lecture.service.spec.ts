@@ -5,6 +5,7 @@ import {
     SpecialLectureWriter,
     SpecialLectureReservationWriter,
 } from './entities/speical-lecture.components'
+import { DataSource } from 'typeorm'
 
 describe('특강 신청', () => {
     let specialLectureReader: SpecialLectureReader
@@ -12,6 +13,7 @@ describe('특강 신청', () => {
     let specialLectureWriter: SpecialLectureWriter
     let specialLectureReservationWriter: SpecialLectureReservationWriter
     let manager: SpecialLectureManager
+    let dataSource: DataSource
 
     beforeEach(() => {
         // Mock the necessary repositories
@@ -38,6 +40,7 @@ describe('특강 신청', () => {
             specialLectureWriter,
             specialLectureReservationReader,
             specialLectureReservationWriter,
+            dataSource,
         )
 
         // Mock implementations
