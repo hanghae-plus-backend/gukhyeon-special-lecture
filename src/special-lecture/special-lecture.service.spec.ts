@@ -1,18 +1,39 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { SpecialLectureService } from './special-lecture.service';
+import {
+    SpecialLectureManager,
+    SpecialLectureReader,
+    SpecialLectureWriter,
+} from './entities/speical-lecture.components'
 
-describe('SpecialLectureService', () => {
-  let service: SpecialLectureService;
+describe('특강 신청', () => {
+    let specialLectureReader: SpecialLectureReader
+    let specialLectureWriter: SpecialLectureWriter
+    let manager: SpecialLectureManager
 
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [SpecialLectureService],
-    }).compile();
+    beforeEach(() => {
+        // Mock the repository to return predefined values or behaviors
+        const specialLectureRepository = {
+            read: jest.fn().mockResolvedValue({
+                /* Mocked return value */
+            }),
+            write: jest.fn().mockResolvedValue({
+                /* Mocked return value */
+            }),
+        }
 
-    service = module.get<SpecialLectureService>(SpecialLectureService);
-  });
+        specialLectureReader = new SpecialLectureReader(
+            specialLectureRepository,
+        )
+        specialLectureWriter = new SpecialLectureWriter(
+            specialLectureRepository,
+        )
+        manager = new SpecialLectureManager(
+            specialLectureReader,
+            specialLectureWriter,
+        )
+    })
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
-  });
-});
+    it('유효 하지 않은 userId 체크', () => {
+        const result = manager.isAvailableUserId(-1)
+        expect(result).toBe(false)
+    })
+})
