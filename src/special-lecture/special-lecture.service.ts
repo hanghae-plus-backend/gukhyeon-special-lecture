@@ -1,26 +1,31 @@
 import { Injectable } from '@nestjs/common'
+import { SpecialLectureManager } from './entities/speical-lecture.components'
 import {
-    SpecialLectureManager,
-    SpecialLectureReader,
-} from './entities/speical-lecture.components'
-import { SpecialLecture } from './entities/special-lecture.entity'
+    SpecialLecture,
+    SpecialLectureReservation,
+} from './entities/special-lecture.entity'
 
 @Injectable()
 export class SpecialLectureService {
-    constructor(
-        private specialLectureManager: SpecialLectureManager,
-        private specialLectureReader: SpecialLectureReader,
-    ) {}
+    constructor(private specialLectureManager: SpecialLectureManager) {}
 
-    async readSpecialLecture(userId: number): Promise<SpecialLecture> {
-        return this.specialLectureManager.read(userId)
+    async readSpecialLecture(id: number): Promise<SpecialLecture> {
+        return this.specialLectureManager.read(id)
     }
 
     async writeSpecialLecture(): Promise<SpecialLecture> {
         return this.specialLectureManager.write()
     }
 
-    async readSpecialLectureDirectly(userId: number): Promise<SpecialLecture> {
-        return this.specialLectureReader.read(userId)
+    async readSpecialLectureReservation(
+        userId: number,
+    ): Promise<SpecialLectureReservation> {
+        return this.specialLectureManager.readReservation(userId)
+    }
+
+    async writeSpecialLectureReservation(
+        userId: number,
+    ): Promise<SpecialLectureReservation> {
+        return this.specialLectureManager.writeReservation(userId)
     }
 }

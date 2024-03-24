@@ -1,5 +1,5 @@
 // special-lecture-writer.service.ts
-import { Injectable } from '@nestjs/common'
+import { Inject, Injectable } from '@nestjs/common'
 import {
     SpecialLectureRepository,
     SpecialLectureReservationRepository,
@@ -11,16 +11,22 @@ import {
 
 @Injectable()
 export class SpecialLectureReader {
-    constructor(private repository: SpecialLectureRepository) {}
+    constructor(
+        @Inject('SpecialLectureRepository')
+        private repository: SpecialLectureRepository,
+    ) {}
 
-    async read(userId: number): Promise<SpecialLecture> {
-        return this.repository.read(userId)
+    async read(lectureId: number): Promise<SpecialLecture> {
+        return this.repository.read(lectureId)
     }
 }
 
 @Injectable()
 export class SpecialLectureWriter {
-    constructor(private repository: SpecialLectureRepository) {}
+    constructor(
+        @Inject('SpecialLectureRepository')
+        private repository: SpecialLectureRepository,
+    ) {}
 
     async write(): Promise<SpecialLecture> {
         return this.repository.write()
@@ -29,7 +35,10 @@ export class SpecialLectureWriter {
 
 @Injectable()
 export class SpecialLectureReservationReader {
-    constructor(private repository: SpecialLectureReservationRepository) {}
+    constructor(
+        @Inject('SpecialLectureReservationRepository')
+        private repository: SpecialLectureReservationRepository,
+    ) {}
 
     async read(userId: number): Promise<SpecialLectureReservation> {
         return this.repository.read(userId)
@@ -38,7 +47,10 @@ export class SpecialLectureReservationReader {
 
 @Injectable()
 export class SpecialLectureReservationWriter {
-    constructor(private repository: SpecialLectureReservationRepository) {}
+    constructor(
+        @Inject('SpecialLectureReservationRepository')
+        private repository: SpecialLectureReservationRepository,
+    ) {}
 
     async write(
         userId: number,
@@ -57,19 +69,23 @@ export class SpecialLectureManager {
         private specialLectureReservationWriter: SpecialLectureReservationWriter,
     ) {}
 
-    async read(userId: number): Promise<SpecialLecture> {
-        return this.specialLectureReader.read(userId)
+    isAvailableUserId(userId: number): boolean {
+        return userId > 0
+    }
+
+    async read(lectureId: number): Promise<SpecialLecture> {
+        return this.specialLectureReader.read(lectureId)
     }
 
     async write(): Promise<SpecialLecture> {
         return this.specialLectureWriter.write()
     }
 
-    isAvailableUserId(userId: number): boolean {
-        return userId > 0
+    async readReservation(userId: number): Promise<SpecialLectureReservation> {
+        return this.specialLectureReservationReader.read(userId)
     }
 
-    async canApplyForSpecialLecture(userId: number): Promise<boolean> {
+    async writeReservation(userId: number): Promise<SpecialLectureReservation> {
         if (!this.isAvailableUserId(userId)) {
             throw new Error('유효하지 않은 유저 아이디입니다.')
         }
@@ -80,6 +96,10 @@ export class SpecialLectureManager {
             throw new Error('강의가 꽉 찼습니다.')
         }
 
+        if (!currentSpecialLecture) {
+            throw new Error('강의를 찾을 수 없습니다.')
+        }
+
         if (
             currentSpecialLecture.specialLectureReservations.find(
                 reservation => reservation.userId === userId,
@@ -88,11 +108,11 @@ export class SpecialLectureManager {
             throw new Error('이미 신청한 유저입니다.')
         }
 
-        // await this.specialLectureReservationWriter.write(
-        //     userId,
-        //     currentSpecialLecture,
-        // )
+        const reservation = await this.specialLectureReservationWriter.write(
+            userId,
+            currentSpecialLecture,
+        )
 
-        return true
+        return reservation
     }
 }

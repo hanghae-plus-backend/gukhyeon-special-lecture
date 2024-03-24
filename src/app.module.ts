@@ -3,8 +3,6 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
-import { SpecialLectureController } from './special-lecture/special-lecture.controller'
-import { SpecialLectureService } from './special-lecture/special-lecture.service'
 import { SpecialLectureModule } from './special-lecture/special-lecture.module'
 
 @Module({
@@ -16,7 +14,6 @@ import { SpecialLectureModule } from './special-lecture/special-lecture.module'
 
         TypeOrmModule.forRootAsync({
             useFactory: async () => {
-                console.log(process.env)
                 return {
                     type: process.env.DB_TYPE,
                     host: process.env.DB_HOST,
@@ -32,7 +29,7 @@ import { SpecialLectureModule } from './special-lecture/special-lecture.module'
         }),
         SpecialLectureModule,
     ],
-    controllers: [AppController, SpecialLectureController],
-    providers: [AppService, SpecialLectureService],
+    controllers: [AppController],
+    providers: [AppService],
 })
 export class AppModule {}

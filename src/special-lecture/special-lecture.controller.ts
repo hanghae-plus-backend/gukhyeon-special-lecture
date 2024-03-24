@@ -1,4 +1,37 @@
-import { Controller } from '@nestjs/common'
+import { Controller, Get, Post, Param } from '@nestjs/common'
+import { SpecialLectureService } from './special-lecture.service'
+import {
+    SpecialLecture,
+    SpecialLectureReservation,
+} from './entities/special-lecture.entity'
 
-@Controller('special-lecture')
-export class SpecialLectureController {}
+@Controller('special-lectures')
+export class SpecialLectureController {
+    constructor(
+        private readonly specialLectureService: SpecialLectureService,
+    ) {}
+
+    @Get(':id')
+    async readSpecialLecture(@Param('id') id: number): Promise<SpecialLecture> {
+        return this.specialLectureService.readSpecialLecture(id)
+    }
+
+    @Post()
+    async writeSpecialLecture(): Promise<SpecialLecture> {
+        return this.specialLectureService.writeSpecialLecture()
+    }
+
+    @Get('reservation/:userId')
+    async readSpecialLectureReservation(
+        @Param('userId') userId: number,
+    ): Promise<SpecialLectureReservation> {
+        return this.specialLectureService.readSpecialLectureReservation(userId)
+    }
+
+    @Post('reservation/:userId')
+    async writeSpecialLectureReservation(
+        @Param('userId') userId: number,
+    ): Promise<SpecialLectureReservation> {
+        return this.specialLectureService.writeSpecialLectureReservation(userId)
+    }
+}

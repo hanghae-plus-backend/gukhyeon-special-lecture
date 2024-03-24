@@ -27,6 +27,12 @@ describe('특강 신청', () => {
         specialLectureReservationReader = new SpecialLectureReservationReader(
             specialLectureRepository,
         )
+        specialLectureWriter = new SpecialLectureWriter(
+            specialLectureRepository,
+        )
+        specialLectureReservationWriter = new SpecialLectureReservationWriter(
+            specialLectureRepository,
+        )
         manager = new SpecialLectureManager(
             specialLectureReader,
             specialLectureWriter,
@@ -40,7 +46,7 @@ describe('특강 신청', () => {
     })
 
     it('should throw an error for an invalid user ID', async () => {
-        await expect(manager.canApplyForSpecialLecture(-1)).rejects.toThrow(
+        await expect(manager.writeReservation(-1)).rejects.toThrow(
             '유효하지 않은 유저 아이디입니다.',
         )
     })
@@ -59,7 +65,7 @@ describe('특강 신청', () => {
             ),
         })
 
-        await expect(manager.canApplyForSpecialLecture(1)).rejects.toThrow(
+        await expect(manager.writeReservation(1)).rejects.toThrow(
             '강의가 꽉 찼습니다.',
         )
     })
@@ -76,7 +82,7 @@ describe('특강 신청', () => {
             ],
         })
 
-        await expect(manager.canApplyForSpecialLecture(1)).rejects.toThrow(
+        await expect(manager.writeReservation(1)).rejects.toThrow(
             '이미 신청한 유저입니다.',
         )
     })
@@ -89,6 +95,20 @@ describe('특강 신청', () => {
             specialLectureReservations: [],
         })
 
-        await expect(manager.canApplyForSpecialLecture(1)).resolves.toBe(true)
+        const reservation = {
+            id: 1,
+            userId: 1,
+            specialLecture: {
+                id: 1,
+                title: 'title',
+                specialLectureReservations: [],
+            },
+        }
+
+        specialLectureReservationWriter.write = jest
+            .fn()
+            .mockResolvedValue(reservation)
+
+        await expect(manager.writeReservation(1)).resolves.toBe(reservation)
     })
 })

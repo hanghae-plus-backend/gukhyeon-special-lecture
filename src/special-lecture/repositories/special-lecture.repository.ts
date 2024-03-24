@@ -20,20 +20,15 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
     ) {}
 
     async read(lectureId: number): Promise<SpecialLecture> {
-        return { id: 1, title: 'title', specialLectureReservations: [] }
-        return this.specialLectureRepository.findOneBy({ id: lectureId })
+        return this.specialLectureRepository.findOne({
+            where: { id: lectureId },
+            relations: ['specialLectureReservations'],
+        })
     }
 
     async write(): Promise<SpecialLecture> {
-        return { id: 1, title: 'title', specialLectureReservations: [] }
-        const specialLectureData = {
-            title: 'title',
-            specialLectureReservations: [],
-        }
-
-        const newLecture =
-            this.specialLectureRepository.create(specialLectureData)
-        return this.specialLectureRepository.save(newLecture)
+        const specialLectureData = new SpecialLecture()
+        return this.specialLectureRepository.save(specialLectureData)
     }
 }
 
@@ -56,15 +51,6 @@ export class SpecialLectureReservationCoreRepository
     ) {}
 
     async read(userId: number): Promise<SpecialLectureReservation> {
-        return {
-            id: 1,
-            userId: 1,
-            specialLecture: {
-                id: 1,
-                title: 'title',
-                specialLectureReservations: [],
-            },
-        }
         return this.specialLectureReservationRepository.findOneBy({ userId })
     }
 
@@ -72,15 +58,6 @@ export class SpecialLectureReservationCoreRepository
         userId: number,
         specialLecture: SpecialLecture,
     ): Promise<SpecialLectureReservation> {
-        return {
-            id: 1,
-            userId: 1,
-            specialLecture: {
-                id: 1,
-                title: 'title',
-                specialLectureReservations: [],
-            },
-        }
         const reservationData = {
             userId,
             specialLecture: specialLecture,
