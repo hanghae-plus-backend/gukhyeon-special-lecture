@@ -16,8 +16,8 @@ export class SpecialLectureService {
         return this.specialLectureManager.read(userId)
     }
 
-    async writeSpecialLecture(userId: number): Promise<SpecialLecture> {
-        return this.specialLectureManager.write(userId)
+    async writeSpecialLecture(): Promise<SpecialLecture> {
+        return this.specialLectureManager.write()
     }
 
     async readSpecialLectureDirectly(userId: number): Promise<SpecialLecture> {

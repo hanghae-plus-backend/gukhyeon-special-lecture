@@ -7,10 +7,9 @@ import { Repository } from 'typeorm/repository/Repository'
 import { InjectRepository } from '@nestjs/typeorm'
 
 export interface SpecialLectureRepository {
-    read(userId: number): Promise<SpecialLecture>
-    count(lectureId: number): Promise<number>
+    read(lectureId: number): Promise<SpecialLecture>
 
-    write(userId: number): Promise<SpecialLecture>
+    write(): Promise<SpecialLecture>
 }
 
 @Injectable()
@@ -20,23 +19,31 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
         private specialLectureRepository: Repository<SpecialLecture>,
     ) {}
 
-    async read(userId: number): Promise<SpecialLecture> {
-        return { id: userId, title: 'title', specialLectureReservations: [] }
+    async read(lectureId: number): Promise<SpecialLecture> {
+        return { id: 1, title: 'title', specialLectureReservations: [] }
+        return this.specialLectureRepository.findOneBy({ id: lectureId })
     }
 
-    async write(userId: number): Promise<SpecialLecture> {
-        return { id: userId, title: 'title', specialLectureReservations: [] }
-    }
+    async write(): Promise<SpecialLecture> {
+        return { id: 1, title: 'title', specialLectureReservations: [] }
+        const specialLectureData = {
+            title: 'title',
+            specialLectureReservations: [],
+        }
 
-    async count(lectureId: number): Promise<number> {
-        return lectureId
+        const newLecture =
+            this.specialLectureRepository.create(specialLectureData)
+        return this.specialLectureRepository.save(newLecture)
     }
 }
 
 export interface SpecialLectureReservationRepository {
     read(userId: number): Promise<SpecialLectureReservation>
 
-    write(userId: number): Promise<SpecialLectureReservation>
+    write(
+        userId: number,
+        specialLecture: SpecialLecture,
+    ): Promise<SpecialLectureReservation>
 }
 
 @Injectable()
@@ -58,9 +65,13 @@ export class SpecialLectureReservationCoreRepository
                 specialLectureReservations: [],
             },
         }
+        return this.specialLectureReservationRepository.findOneBy({ userId })
     }
 
-    async write(userId: number): Promise<SpecialLectureReservation> {
+    async write(
+        userId: number,
+        specialLecture: SpecialLecture,
+    ): Promise<SpecialLectureReservation> {
         return {
             id: 1,
             userId: 1,
@@ -70,5 +81,13 @@ export class SpecialLectureReservationCoreRepository
                 specialLectureReservations: [],
             },
         }
+        const reservationData = {
+            userId,
+            specialLecture: specialLecture,
+        }
+
+        const newReservation =
+            this.specialLectureReservationRepository.create(reservationData)
+        return this.specialLectureReservationRepository.save(newReservation)
     }
 }

@@ -16,18 +16,14 @@ export class SpecialLectureReader {
     async read(userId: number): Promise<SpecialLecture> {
         return this.repository.read(userId)
     }
-
-    async getCount(lectureId: number): Promise<number> {
-        return this.repository.count(lectureId)
-    }
 }
 
 @Injectable()
 export class SpecialLectureWriter {
     constructor(private repository: SpecialLectureRepository) {}
 
-    async write(userId: number): Promise<SpecialLecture> {
-        return this.repository.write(userId)
+    async write(): Promise<SpecialLecture> {
+        return this.repository.write()
     }
 }
 
@@ -44,8 +40,11 @@ export class SpecialLectureReservationReader {
 export class SpecialLectureReservationWriter {
     constructor(private repository: SpecialLectureReservationRepository) {}
 
-    async write(userId: number): Promise<SpecialLectureReservation> {
-        return this.repository.write(userId)
+    async write(
+        userId: number,
+        specialLecture: SpecialLecture,
+    ): Promise<SpecialLectureReservation> {
+        return this.repository.write(userId, specialLecture)
     }
 }
 
@@ -62,8 +61,8 @@ export class SpecialLectureManager {
         return this.specialLectureReader.read(userId)
     }
 
-    async write(userId: number): Promise<SpecialLecture> {
-        return this.specialLectureWriter.write(userId)
+    async write(): Promise<SpecialLecture> {
+        return this.specialLectureWriter.write()
     }
 
     isAvailableUserId(userId: number): boolean {
@@ -75,19 +74,24 @@ export class SpecialLectureManager {
             throw new Error('유효하지 않은 유저 아이디입니다.')
         }
 
-        const currentApplicantCount =
-            await this.specialLectureReader.getCount(1) //현재 강의는 무조건 1번
+        const currentSpecialLecture = await this.specialLectureReader.read(1) //현재 강의는 무조건 1번
 
-        if (currentApplicantCount >= 30) {
+        if (currentSpecialLecture.specialLectureReservations.length >= 30) {
             throw new Error('강의가 꽉 찼습니다.')
         }
 
-        const specialLectureReservation =
-            await this.specialLectureReservationReader.read(userId)
-
-        if (specialLectureReservation) {
+        if (
+            currentSpecialLecture.specialLectureReservations.find(
+                reservation => reservation.userId === userId,
+            )
+        ) {
             throw new Error('이미 신청한 유저입니다.')
         }
+
+        // await this.specialLectureReservationWriter.write(
+        //     userId,
+        //     currentSpecialLecture,
+        // )
 
         return true
     }
