@@ -5,6 +5,8 @@ import { InjectRepository } from '@nestjs/typeorm'
 
 export interface SpecialLectureRepository {
     read(userId: number): Promise<SpecialLecture>
+    count(lectureId: number): Promise<number>
+
     write(userId: number): Promise<SpecialLecture>
 }
 
@@ -21,5 +23,9 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
 
     async write(userId: number): Promise<SpecialLecture> {
         return { id: userId, title: 'title', specialLectureReservations: [] }
+    }
+
+    async count(lectureId: number): Promise<number> {
+        return 0
     }
 }

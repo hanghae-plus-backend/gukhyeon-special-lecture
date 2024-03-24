@@ -10,6 +10,10 @@ export class SpecialLectureReader {
     async read(userId: number): Promise<SpecialLecture> {
         return this.repository.read(userId)
     }
+
+    async getCount(lectureId: number): Promise<number> {
+        return this.repository.count(lectureId)
+    }
 }
 
 @Injectable()
@@ -38,5 +42,11 @@ export class SpecialLectureManager {
 
     isAvailableUserId(userId: number): boolean {
         return userId > 0
+    }
+
+    canApplyForSpecialLecture = async (userId: number): Promise<boolean> => {
+        const currentApplicantCount =
+            await this.specialLectureReader.getCount(1) //현재 강의는 무조건 1번
+        return currentApplicantCount < 30
     }
 }
