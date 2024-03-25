@@ -7,6 +7,7 @@ import {
     HttpStatus,
     Inject,
     Injectable,
+    Logger,
     NotFoundException,
 } from '@nestjs/common'
 import {
@@ -79,6 +80,8 @@ export class SpecialLectureReservationWriter {
 
 @Injectable()
 export class SpecialLectureManager {
+    private readonly logger = new Logger(SpecialLectureManager.name)
+
     constructor(
         private specialLectureReader: SpecialLectureReader,
         private specialLectureWriter: SpecialLectureWriter,
@@ -162,9 +165,11 @@ export class SpecialLectureManager {
             } else if (error instanceof ConflictException) {
                 throw new ConflictException(error.message)
             } else {
-                // 일반적인 에러 처리
+                this.logger.error(
+                    `Error while creating reservation for user ID ${userId}: ${error.message}`,
+                )
                 throw new HttpException(
-                    error.message,
+                    '서버 내의 오류가 발생했습니다',
                     HttpStatus.INTERNAL_SERVER_ERROR,
                 )
             }
