@@ -1,7 +1,15 @@
 // special-lecture-writer.service.ts
-import { Inject, Injectable } from '@nestjs/common'
 import {
-    LockModeType,
+    BadRequestException,
+    ConflictException,
+    ForbiddenException,
+    HttpException,
+    HttpStatus,
+    Inject,
+    Injectable,
+    NotFoundException,
+} from '@nestjs/common'
+import {
     SpecialLectureRepository,
     SpecialLectureReservationRepository,
 } from '../repositories/special-lecture.repository'
@@ -21,9 +29,8 @@ export class SpecialLectureReader {
     async read(
         lectureId: number,
         entityManager: EntityManager,
-        lockMode?: LockModeType,
     ): Promise<SpecialLecture> {
-        return this.repository.read(lectureId, entityManager, lockMode)
+        return this.repository.read(lectureId, entityManager)
     }
 }
 
@@ -104,39 +111,65 @@ export class SpecialLectureManager {
 
     async writeReservation(userId: number): Promise<SpecialLectureReservation> {
         if (!this.isAvailableUserId(userId)) {
-            throw new Error('유효하지 않은 유저 아이디입니다.')
+            throw new BadRequestException('유효하지 않은 유저 아이디입니다.')
         }
 
-        return await this.dataSource.transaction(async entityManager => {
+        const queryRunner = this.dataSource.createQueryRunner()
+
+        await queryRunner.connect()
+        await queryRunner.startTransaction()
+
+        try {
             const specialLecture = await this.specialLectureReader.read(
                 1,
-                entityManager,
-                'pessimistic_write',
+                queryRunner.manager,
             )
 
-            if (
-                !specialLecture ||
-                specialLecture.specialLectureReservations.length >= 30
-            ) {
-                throw new Error('강의가 꽉 찼거나 찾을 수 없습니다.')
+            if (!specialLecture) {
+                throw new NotFoundException('강의를 찾을 수 없습니다.')
+            }
+
+            if (specialLecture.specialLectureReservations.length >= 30) {
+                throw new ForbiddenException('강의가 꽉 찼습니다.')
             }
 
             if (
-                specialLecture.specialLectureReservations.some(
-                    reservation => reservation.userId === userId,
+                specialLecture.specialLectureReservations.find(
+                    reservation => reservation.userId == userId,
                 )
             ) {
-                throw new Error('이미 신청한 유저입니다.')
+                throw new ConflictException('이미 신청한 유저입니다.')
             }
 
             const reservation =
                 await this.specialLectureReservationWriter.write(
-                    entityManager,
+                    queryRunner.manager,
                     userId,
                     specialLecture,
                 )
 
+            await queryRunner.commitTransaction()
             return reservation
-        })
+        } catch (error) {
+            await queryRunner.rollbackTransaction()
+
+            if (error instanceof BadRequestException) {
+                throw new BadRequestException(error.message)
+            } else if (error instanceof NotFoundException) {
+                throw new NotFoundException(error.message)
+            } else if (error instanceof ForbiddenException) {
+                throw new ForbiddenException(error.message)
+            } else if (error instanceof ConflictException) {
+                throw new ConflictException(error.message)
+            } else {
+                // 일반적인 에러 처리
+                throw new HttpException(
+                    error.message,
+                    HttpStatus.INTERNAL_SERVER_ERROR,
+                )
+            }
+        } finally {
+            await queryRunner.release()
+        }
     }
 }

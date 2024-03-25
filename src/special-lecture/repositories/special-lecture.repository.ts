@@ -4,20 +4,10 @@ import {
 } from '../entities/special-lecture.entity'
 import { EntityManager } from 'typeorm'
 
-export type LockModeType =
-    | 'pessimistic_read'
-    | 'pessimistic_write'
-    | 'dirty_read'
-    | 'pessimistic_partial_write'
-    | 'pessimistic_write_or_fail'
-    | 'for_no_key_update'
-    | 'for_key_share'
-
 export interface SpecialLectureRepository {
     read(
         lectureId: number,
         entityManager: EntityManager,
-        lockMode?: LockModeType,
     ): Promise<SpecialLecture>
 
     write(entityManager: EntityManager): Promise<SpecialLecture>
@@ -27,7 +17,6 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
     async read(
         lectureId: number,
         entityManager: EntityManager,
-        lockMode?: LockModeType,
     ): Promise<SpecialLecture> {
         const queryBuilder = entityManager
             .createQueryBuilder(SpecialLecture, 'specialLecture')
@@ -37,11 +26,8 @@ export class SpecialLectureCoreRepository implements SpecialLectureRepository {
             )
             .where('specialLecture.id = :id', { id: lectureId })
 
-        if (lockMode) {
-            queryBuilder.setLock(lockMode)
-        }
-
-        return await queryBuilder.getOne()
+        const result = await queryBuilder.getOne()
+        return result
     }
 
     async write(entityManager: EntityManager): Promise<SpecialLecture> {

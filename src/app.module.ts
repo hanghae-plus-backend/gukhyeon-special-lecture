@@ -23,7 +23,7 @@ import { SpecialLectureModule } from './special-lecture/special-lecture.module'
                     database: process.env.DATABASE,
                     entities: [__dirname + '/**/*.entity{.ts,.js}'],
                     synchronize: true,
-                    logging: true,
+                    logging: false,
                 } as TypeOrmModuleOptions
             },
         }),

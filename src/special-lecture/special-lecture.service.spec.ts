@@ -5,7 +5,7 @@ import {
     SpecialLectureWriter,
     SpecialLectureReservationWriter,
 } from './entities/speical-lecture.components'
-import { DataSource } from 'typeorm'
+import { DataSource, QueryRunner } from 'typeorm'
 
 describe('특강 신청', () => {
     let specialLectureReader: SpecialLectureReader
@@ -14,6 +14,17 @@ describe('특강 신청', () => {
     let specialLectureReservationWriter: SpecialLectureReservationWriter
     let manager: SpecialLectureManager
     let dataSource: DataSource
+    let queryRunner: QueryRunner
+
+    const mockDS = {
+        initialize: jest.fn(),
+    }
+
+    jest.mock('typeorm', () => {
+        return {
+            DataSource: jest.fn().mockImplementation(() => mockDS),
+        }
+    })
 
     beforeEach(() => {
         // Mock the necessary repositories
@@ -21,7 +32,6 @@ describe('특강 신청', () => {
             read: jest.fn(),
             write: jest.fn(),
         }
-
         // Initialize readers and the manager with the mocked repositories
         specialLectureReader = new SpecialLectureReader(
             specialLectureRepository,
@@ -35,6 +45,27 @@ describe('특강 신청', () => {
         specialLectureReservationWriter = new SpecialLectureReservationWriter(
             specialLectureRepository,
         )
+
+        dataSource = new DataSource({
+            type: 'mariadb',
+            host: process.env.DB_HOST,
+            port: 3306,
+            username: process.env.DB_USER_NAME,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DATABASE,
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: false,
+            logging: false,
+        })
+        queryRunner = dataSource.createQueryRunner()
+
+        dataSource.createQueryRunner = jest.fn().mockReturnValue(queryRunner)
+        queryRunner.connect = jest.fn().mockResolvedValue(undefined)
+        queryRunner.startTransaction = jest.fn().mockResolvedValue(undefined)
+        queryRunner.commitTransaction = jest.fn().mockResolvedValue(undefined)
+        queryRunner.rollbackTransaction = jest.fn().mockResolvedValue(undefined)
+        queryRunner.release = jest.fn().mockResolvedValue(undefined)
+
         manager = new SpecialLectureManager(
             specialLectureReader,
             specialLectureWriter,
@@ -67,6 +98,12 @@ describe('특강 신청', () => {
                 }),
             ),
         })
+
+        dataSource.transaction = jest
+            .fn()
+            .mockImplementation(async callback => {
+                return callback
+            })
 
         await expect(manager.writeReservation(1)).rejects.toThrow(
             '강의가 꽉 찼습니다.',
