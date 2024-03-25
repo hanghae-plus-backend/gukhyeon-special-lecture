@@ -1,40 +1,62 @@
-import { Injectable } from '@nestjs/common'
 import {
     SpecialLecture,
     SpecialLectureReservation,
 } from '../entities/special-lecture.entity'
-import { Repository } from 'typeorm/repository/Repository'
-import { InjectRepository } from '@nestjs/typeorm'
 import { EntityManager } from 'typeorm'
 
-export interface SpecialLectureRepository {
-    read(lectureId: number): Promise<SpecialLecture>
+export type LockModeType =
+    | 'pessimistic_read'
+    | 'pessimistic_write'
+    | 'dirty_read'
+    | 'pessimistic_partial_write'
+    | 'pessimistic_write_or_fail'
+    | 'for_no_key_update'
+    | 'for_key_share'
 
-    write(): Promise<SpecialLecture>
+export interface SpecialLectureRepository {
+    read(
+        lectureId: number,
+        entityManager: EntityManager,
+        lockMode?: LockModeType,
+    ): Promise<SpecialLecture>
+
+    write(entityManager: EntityManager): Promise<SpecialLecture>
 }
 
-@Injectable()
 export class SpecialLectureCoreRepository implements SpecialLectureRepository {
-    constructor(
-        @InjectRepository(SpecialLecture)
-        private specialLectureRepository: Repository<SpecialLecture>,
-    ) {}
+    async read(
+        lectureId: number,
+        entityManager: EntityManager,
+        lockMode?: LockModeType,
+    ): Promise<SpecialLecture> {
+        const queryBuilder = entityManager
+            .createQueryBuilder(SpecialLecture, 'specialLecture')
+            .leftJoinAndSelect(
+                'specialLecture.specialLectureReservations',
+                'reservation',
+            )
+            .where('specialLecture.id = :id', { id: lectureId })
 
-    async read(lectureId: number): Promise<SpecialLecture> {
-        return this.specialLectureRepository.findOne({
-            where: { id: lectureId },
-            relations: ['specialLectureReservations'],
-        })
+        if (lockMode) {
+            queryBuilder.setLock(lockMode)
+        }
+
+        return await queryBuilder.getOne()
     }
 
-    async write(): Promise<SpecialLecture> {
+    async write(entityManager: EntityManager): Promise<SpecialLecture> {
         const specialLectureData = new SpecialLecture()
-        return this.specialLectureRepository.save(specialLectureData)
+        specialLectureData.title = 'Special Lecture'
+
+        return entityManager.save(specialLectureData)
     }
 }
 
 export interface SpecialLectureReservationRepository {
-    read(userId: number): Promise<SpecialLectureReservation>
+    read(
+        userId: number,
+        entityManager: EntityManager,
+    ): Promise<SpecialLectureReservation>
 
     write(
         entityManager: EntityManager,
@@ -43,17 +65,25 @@ export interface SpecialLectureReservationRepository {
     ): Promise<SpecialLectureReservation>
 }
 
-@Injectable()
 export class SpecialLectureReservationCoreRepository
     implements SpecialLectureReservationRepository
 {
-    constructor(
-        @InjectRepository(SpecialLectureReservation)
-        private specialLectureReservationRepository: Repository<SpecialLectureReservation>,
-    ) {}
+    async read(
+        userId: number,
+        entityManager: EntityManager,
+    ): Promise<SpecialLectureReservation> {
+        const queryBuilder = entityManager
+            .createQueryBuilder(
+                SpecialLectureReservation,
+                'specialLectureReservation',
+            )
+            .leftJoinAndSelect(
+                'specialLectureReservation.specialLecture',
+                'specialLecture',
+            )
+            .where('specialLectureReservation.userId = :userId', { userId })
 
-    async read(userId: number): Promise<SpecialLectureReservation> {
-        return this.specialLectureReservationRepository.findOneBy({ userId })
+        return await queryBuilder.getOne()
     }
 
     async write(
@@ -65,7 +95,6 @@ export class SpecialLectureReservationCoreRepository
         reservationData.userId = userId
         reservationData.specialLecture = specialLecture
 
-        // Use the provided entityManager to save the reservation
         return entityManager.save(reservationData)
     }
 }

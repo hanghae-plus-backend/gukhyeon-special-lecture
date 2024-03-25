@@ -1,6 +1,7 @@
 // special-lecture-writer.service.ts
 import { Inject, Injectable } from '@nestjs/common'
 import {
+    LockModeType,
     SpecialLectureRepository,
     SpecialLectureReservationRepository,
 } from '../repositories/special-lecture.repository'
@@ -19,16 +20,10 @@ export class SpecialLectureReader {
 
     async read(
         lectureId: number,
-        entityManager?: EntityManager,
+        entityManager: EntityManager,
+        lockMode?: LockModeType,
     ): Promise<SpecialLecture> {
-        if (entityManager) {
-            return entityManager.findOne(SpecialLecture, {
-                where: { id: lectureId },
-                relations: ['specialLectureReservations'],
-            })
-        } else {
-            return this.repository.read(lectureId)
-        }
+        return this.repository.read(lectureId, entityManager, lockMode)
     }
 }
 
@@ -39,8 +34,8 @@ export class SpecialLectureWriter {
         private repository: SpecialLectureRepository,
     ) {}
 
-    async write(): Promise<SpecialLecture> {
-        return this.repository.write()
+    async write(entityManager: EntityManager): Promise<SpecialLecture> {
+        return this.repository.write(entityManager)
     }
 }
 
@@ -51,8 +46,11 @@ export class SpecialLectureReservationReader {
         private repository: SpecialLectureReservationRepository,
     ) {}
 
-    async read(userId: number): Promise<SpecialLectureReservation> {
-        return this.repository.read(userId)
+    async read(
+        userId: number,
+        entityManager: EntityManager,
+    ): Promise<SpecialLectureReservation> {
+        return this.repository.read(userId, entityManager)
     }
 }
 
@@ -87,15 +85,21 @@ export class SpecialLectureManager {
     }
 
     async read(lectureId: number): Promise<SpecialLecture> {
-        return this.specialLectureReader.read(lectureId)
+        return await this.specialLectureReader.read(
+            lectureId,
+            this.dataSource.manager,
+        )
     }
 
     async write(): Promise<SpecialLecture> {
-        return this.specialLectureWriter.write()
+        return this.specialLectureWriter.write(this.dataSource.manager)
     }
 
     async readReservation(userId: number): Promise<SpecialLectureReservation> {
-        return this.specialLectureReservationReader.read(userId)
+        return this.specialLectureReservationReader.read(
+            userId,
+            this.dataSource.manager,
+        )
     }
 
     async writeReservation(userId: number): Promise<SpecialLectureReservation> {
@@ -107,7 +111,8 @@ export class SpecialLectureManager {
             const specialLecture = await this.specialLectureReader.read(
                 1,
                 entityManager,
-            ) // Assuming this ID is dynamic in a real scenario
+                'pessimistic_write',
+            )
 
             if (
                 !specialLecture ||
@@ -124,8 +129,6 @@ export class SpecialLectureManager {
                 throw new Error('이미 신청한 유저입니다.')
             }
 
-            // Here, use the entityManager to call the write method from the repository
-            // Ensure that your repository's write method can accept and use an EntityManager if provided
             const reservation =
                 await this.specialLectureReservationWriter.write(
                     entityManager,
@@ -136,34 +139,4 @@ export class SpecialLectureManager {
             return reservation
         })
     }
-    // async writeReservation(userId: number): Promise<SpecialLectureReservation> {
-    //     if (!this.isAvailableUserId(userId)) {
-    //         throw new Error('유효하지 않은 유저 아이디입니다.')
-    //     }
-
-    //     const currentSpecialLecture = await this.specialLectureReader.read(1) //현재 강의는 무조건 1번
-
-    //     if (currentSpecialLecture.specialLectureReservations.length >= 30) {
-    //         throw new Error('강의가 꽉 찼습니다.')
-    //     }
-
-    //     if (!currentSpecialLecture) {
-    //         throw new Error('강의를 찾을 수 없습니다.')
-    //     }
-
-    //     if (
-    //         currentSpecialLecture.specialLectureReservations.find(
-    //             reservation => reservation.userId === userId,
-    //         )
-    //     ) {
-    //         throw new Error('이미 신청한 유저입니다.')
-    //     }
-
-    //     const reservation = await this.specialLectureReservationWriter.write(
-    //         userId,
-    //         currentSpecialLecture,
-    //     )
-
-    //     return reservation
-    // }
 }
