@@ -1,22 +1,20 @@
 import { Module } from '@nestjs/common'
 import { SpecialLectureService } from './special-lecture.service'
 import {
-    SpecialLectureManager,
     SpecialLectureReader,
     SpecialLectureWriter,
+} from './components/speical-lecture.component'
+import { SpecialLectureCoreRepository } from './repositories/special-lecture.repository'
+import { TypeOrmModule } from '@nestjs/typeorm'
+import { SpecialLecture } from './entities/special-lecture.entity'
+import { SpecialLectureController } from './special-lecture.controller'
+import { SpecialLectureManager } from './components/special-lecture-manager.component'
+import { SpecialLectureReservation } from './entities/special-lecture-reservation.entity'
+import {
     SpecialLectureReservationReader,
     SpecialLectureReservationWriter,
-} from './entities/speical-lecture.components'
-import {
-    SpecialLectureCoreRepository,
-    SpecialLectureReservationCoreRepository,
-} from './repositories/special-lecture.repository'
-import { TypeOrmModule } from '@nestjs/typeorm'
-import {
-    SpecialLecture,
-    SpecialLectureReservation,
-} from './entities/special-lecture.entity'
-import { SpecialLectureController } from './special-lecture.controller'
+} from './components/special-lecture-reservation.component'
+import { SpecialLectureReservationCoreRepository } from './repositories/special-lecture-reservation.repository'
 
 @Module({
     imports: [

@@ -1,9 +1,7 @@
 import { Controller, Get, Post, Param } from '@nestjs/common'
 import { SpecialLectureService } from './special-lecture.service'
-import {
-    SpecialLecture,
-    SpecialLectureReservation,
-} from './entities/special-lecture.entity'
+import { SpecialLecture } from './entities/special-lecture.entity'
+import { SpecialLectureReservation } from './entities/special-lecture-reservation.entity'
 
 @Controller('special-lectures')
 export class SpecialLectureController {

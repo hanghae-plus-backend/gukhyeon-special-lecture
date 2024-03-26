@@ -1,82 +1,24 @@
-// special-lecture-writer.service.ts
 import {
     BadRequestException,
     ConflictException,
     ForbiddenException,
     HttpException,
     HttpStatus,
-    Inject,
     Injectable,
     Logger,
     NotFoundException,
 } from '@nestjs/common'
+import { SpecialLecture } from '../entities/special-lecture.entity'
+import { DataSource } from 'typeorm'
+import { SpecialLectureReservation } from '../entities/special-lecture-reservation.entity'
 import {
-    SpecialLectureRepository,
-    SpecialLectureReservationRepository,
-} from '../repositories/special-lecture.repository'
+    SpecialLectureReservationReader,
+    SpecialLectureReservationWriter,
+} from './special-lecture-reservation.component'
 import {
-    SpecialLecture,
-    SpecialLectureReservation,
-} from '../entities/special-lecture.entity'
-import { DataSource, EntityManager } from 'typeorm'
-
-@Injectable()
-export class SpecialLectureReader {
-    constructor(
-        @Inject('SpecialLectureRepository')
-        private repository: SpecialLectureRepository,
-    ) {}
-
-    async read(
-        lectureId: number,
-        entityManager: EntityManager,
-    ): Promise<SpecialLecture> {
-        return this.repository.read(lectureId, entityManager)
-    }
-}
-
-@Injectable()
-export class SpecialLectureWriter {
-    constructor(
-        @Inject('SpecialLectureRepository')
-        private repository: SpecialLectureRepository,
-    ) {}
-
-    async write(entityManager: EntityManager): Promise<SpecialLecture> {
-        return this.repository.write(entityManager)
-    }
-}
-
-@Injectable()
-export class SpecialLectureReservationReader {
-    constructor(
-        @Inject('SpecialLectureReservationRepository')
-        private repository: SpecialLectureReservationRepository,
-    ) {}
-
-    async read(
-        userId: number,
-        entityManager: EntityManager,
-    ): Promise<SpecialLectureReservation> {
-        return this.repository.read(userId, entityManager)
-    }
-}
-
-@Injectable()
-export class SpecialLectureReservationWriter {
-    constructor(
-        @Inject('SpecialLectureReservationRepository')
-        private repository: SpecialLectureReservationRepository,
-    ) {}
-
-    async write(
-        entityManager: EntityManager,
-        userId: number,
-        specialLecture: SpecialLecture,
-    ): Promise<SpecialLectureReservation> {
-        return this.repository.write(entityManager, userId, specialLecture)
-    }
-}
+    SpecialLectureReader,
+    SpecialLectureWriter,
+} from './speical-lecture.component'
 
 @Injectable()
 export class SpecialLectureManager {

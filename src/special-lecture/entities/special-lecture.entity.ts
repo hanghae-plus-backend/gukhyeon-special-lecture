@@ -1,10 +1,5 @@
-import {
-    Entity,
-    PrimaryGeneratedColumn,
-    Column,
-    OneToMany,
-    ManyToOne,
-} from 'typeorm'
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm'
+import { SpecialLectureReservation } from './special-lecture-reservation.entity'
 
 @Entity()
 export class SpecialLecture {
@@ -19,22 +14,4 @@ export class SpecialLecture {
         SpecialLectureReservation => SpecialLectureReservation.specialLecture,
     )
     specialLectureReservations: SpecialLectureReservation[]
-}
-
-@Entity()
-export class SpecialLectureReservation {
-    @PrimaryGeneratedColumn()
-    id: number
-
-    @Column()
-    userId: number
-
-    @ManyToOne(
-        () => SpecialLecture,
-        specialLecture => specialLecture.specialLectureReservations,
-        {
-            onDelete: 'CASCADE',
-        },
-    )
-    specialLecture: SpecialLecture
 }

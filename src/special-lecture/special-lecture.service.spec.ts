@@ -1,10 +1,12 @@
+import { SpecialLectureManager } from './components/special-lecture-manager.component'
 import {
-    SpecialLectureManager,
-    SpecialLectureReader,
     SpecialLectureReservationReader,
-    SpecialLectureWriter,
     SpecialLectureReservationWriter,
-} from './entities/speical-lecture.components'
+} from './components/special-lecture-reservation.component'
+import {
+    SpecialLectureReader,
+    SpecialLectureWriter,
+} from './components/speical-lecture.component'
 import { DataSource, QueryRunner } from 'typeorm'
 
 describe('특강 신청', () => {

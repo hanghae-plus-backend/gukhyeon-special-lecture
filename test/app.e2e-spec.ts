@@ -16,6 +16,10 @@ describe('AppController (e2e)', () => {
         await app.init()
     })
 
+    afterAll(async () => {
+        await app.close()
+    })
+
     it('/ (POST) /special-lecture/:userId', async () => {
         const requests = Array(30)
             .fill(null)

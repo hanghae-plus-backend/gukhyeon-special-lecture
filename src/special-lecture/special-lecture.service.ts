@@ -1,9 +1,7 @@
 import { Injectable } from '@nestjs/common'
-import { SpecialLectureManager } from './entities/speical-lecture.components'
-import {
-    SpecialLecture,
-    SpecialLectureReservation,
-} from './entities/special-lecture.entity'
+import { SpecialLecture } from './entities/special-lecture.entity'
+import { SpecialLectureManager } from './components/special-lecture-manager.component'
+import { SpecialLectureReservation } from './entities/special-lecture-reservation.entity'
 
 @Injectable()
 export class SpecialLectureService {
