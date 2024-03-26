@@ -62,7 +62,7 @@ export class SpecialLectureManager {
         const queryRunner = this.dataSource.createQueryRunner()
 
         await queryRunner.connect()
-        await queryRunner.startTransaction()
+        await queryRunner.startTransaction('SERIALIZABLE')
 
         try {
             const specialLecture = await this.specialLectureReader.read(
