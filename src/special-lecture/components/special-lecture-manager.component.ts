@@ -58,16 +58,15 @@ export class SpecialLectureManager {
         if (!this.isAvailableUserId(userId)) {
             throw new BadRequestException('유효하지 않은 유저 아이디입니다.')
         }
-
         const queryRunner = this.dataSource.createQueryRunner()
-
         await queryRunner.connect()
-        await queryRunner.startTransaction('SERIALIZABLE')
+        await queryRunner.startTransaction()
 
         try {
             const specialLecture = await this.specialLectureReader.read(
                 1,
                 queryRunner.manager,
+                'pessimistic_write', // 트랜잭션 내에서 비관적 락 사용
             )
 
             if (!specialLecture) {

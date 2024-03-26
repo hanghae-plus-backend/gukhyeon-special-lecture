@@ -21,11 +21,13 @@ describe('AppController (e2e)', () => {
     })
 
     it('/ (POST) /special-lecture/:userId', async () => {
-        const requests = Array(30)
+        const requests = Array(31) // 30개에서 31개로 변경
             .fill(null)
-            .map(() => {
+            .map((_, index) => {
+                // 인덱스 활용
+                const userId = index + 1 // userId를 1부터 시작하여 증가
                 return request(app.getHttpServer())
-                    .post(`/special-lectures/reservation/1`)
+                    .post(`/special-lectures/reservation/${userId}`) // 동적으로 userId 할당
                     .then(response => {
                         if (response.status >= 400) {
                             throw new Error(

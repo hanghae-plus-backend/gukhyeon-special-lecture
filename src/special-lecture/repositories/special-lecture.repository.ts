@@ -5,26 +5,35 @@ export interface SpecialLectureRepository {
     read(
         lectureId: number,
         entityManager: EntityManager,
+        lockMode?: LockModeType,
     ): Promise<SpecialLecture>
 
-    write(entityManager: EntityManager): Promise<SpecialLecture>
+    write(
+        entityManager: EntityManager,
+        lockMode?: LockModeType,
+    ): Promise<SpecialLecture>
 }
+
+export type LockModeType =
+    | 'pessimistic_read'
+    | 'pessimistic_write'
+    | 'dirty_read'
+    | 'pessimistic_partial_write'
+    | 'pessimistic_write_or_fail'
+    | 'for_no_key_update'
+    | 'for_key_share'
 
 export class SpecialLectureCoreRepository implements SpecialLectureRepository {
     async read(
         lectureId: number,
         entityManager: EntityManager,
+        lockMode?: LockModeType,
     ): Promise<SpecialLecture> {
-        const queryBuilder = entityManager
-            .createQueryBuilder(SpecialLecture, 'specialLecture')
-            .leftJoinAndSelect(
-                'specialLecture.specialLectureReservations',
-                'reservation',
-            )
-            .where('specialLecture.id = :id', { id: lectureId })
-
-        const result = await queryBuilder.getOne()
-        return result
+        return entityManager.findOne(SpecialLecture, {
+            where: { id: lectureId },
+            relations: ['specialLectureReservations'],
+            lock: lockMode ? { mode: lockMode } : undefined,
+        })
     }
 
     async write(entityManager: EntityManager): Promise<SpecialLecture> {

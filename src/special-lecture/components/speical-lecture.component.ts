@@ -1,5 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
-import { SpecialLectureRepository } from '../repositories/special-lecture.repository'
+import {
+    LockModeType,
+    SpecialLectureRepository,
+} from '../repositories/special-lecture.repository'
 import { SpecialLecture } from '../entities/special-lecture.entity'
 import { EntityManager } from 'typeorm'
 
@@ -13,8 +16,9 @@ export class SpecialLectureReader {
     async read(
         lectureId: number,
         entityManager: EntityManager,
+        lockMode?: LockModeType,
     ): Promise<SpecialLecture> {
-        return this.repository.read(lectureId, entityManager)
+        return this.repository.read(lectureId, entityManager, lockMode)
     }
 }
 
