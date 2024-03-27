@@ -1,19 +1,6 @@
 import { SpecialLecture } from '../entities/special-lecture.entity'
 import { EntityManager } from 'typeorm'
 
-export interface SpecialLectureRepository {
-    read(
-        lectureId: number,
-        entityManager: EntityManager,
-        lockMode?: LockModeType,
-    ): Promise<SpecialLecture>
-
-    write(
-        entityManager: EntityManager,
-        lockMode?: LockModeType,
-    ): Promise<SpecialLecture>
-}
-
 export type LockModeType =
     | 'pessimistic_read'
     | 'pessimistic_write'
@@ -22,6 +9,16 @@ export type LockModeType =
     | 'pessimistic_write_or_fail'
     | 'for_no_key_update'
     | 'for_key_share'
+
+export interface SpecialLectureRepository {
+    read(
+        lectureId: number,
+        entityManager: EntityManager,
+        lockMode?: LockModeType,
+    ): Promise<SpecialLecture>
+
+    write(entityManager: EntityManager): Promise<SpecialLecture>
+}
 
 export class SpecialLectureCoreRepository implements SpecialLectureRepository {
     async read(
