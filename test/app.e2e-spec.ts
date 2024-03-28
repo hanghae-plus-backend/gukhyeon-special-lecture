@@ -3,20 +3,52 @@ import { HttpStatus, INestApplication } from '@nestjs/common'
 import * as request from 'supertest'
 import { AppModule } from './../src/app.module'
 import { LectureModule } from './../src/special-lecture/lecture.module'
+import { EntityManager } from 'typeorm'
+import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
+import { ConfigModule } from '@nestjs/config'
 
 describe('AppController (e2e)', () => {
     let app: INestApplication
+    let entityManager: EntityManager // Declare entityManager
 
     beforeEach(async () => {
         const moduleFixture: TestingModule = await Test.createTestingModule({
-            imports: [AppModule, LectureModule],
+            imports: [
+                LectureModule,
+                AppModule,
+                ConfigModule.forRoot({
+                    envFilePath: '.env',
+                    isGlobal: true,
+                }),
+
+                TypeOrmModule.forRootAsync({
+                    useFactory: async () => {
+                        return {
+                            type: process.env.DB_TYPE,
+                            host: process.env.DB_HOST,
+                            port: process.env.DB_PORT,
+                            username: process.env.DB_USER_NAME,
+                            password: process.env.DB_PASSWORD,
+                            database: process.env.DATABASE,
+                            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+                            synchronize: true,
+                            logging: false,
+                        } as TypeOrmModuleOptions
+                    },
+                }),
+            ],
         }).compile()
 
         app = moduleFixture.createNestApplication()
         await app.init()
+
+        entityManager = moduleFixture.get(EntityManager)
     })
 
     afterAll(async () => {
+        await entityManager.delete('lecture', {})
+        await entityManager.delete('lecture_time_table', {})
+        await entityManager.delete('lecture_reservation', {})
         await app.close()
     })
 
