@@ -3,7 +3,7 @@ import { AppController } from './app.controller'
 import { AppService } from './app.service'
 import { TypeOrmModule, TypeOrmModuleOptions } from '@nestjs/typeorm'
 import { ConfigModule } from '@nestjs/config'
-import { SpecialLectureModule } from './special-lecture/special-lecture.module'
+import { LectureModule } from './special-lecture/lecture.module'
 
 @Module({
     imports: [
@@ -27,7 +27,7 @@ import { SpecialLectureModule } from './special-lecture/special-lecture.module'
                 } as TypeOrmModuleOptions
             },
         }),
-        SpecialLectureModule,
+        LectureModule,
     ],
     controllers: [AppController],
     providers: [AppService],
