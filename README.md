@@ -1,4 +1,16 @@
-![image](https://github.com/hanghae-plus-backend/gukhyeon-special-lecture/assets/57578975/944d64fa-bcc4-479a-af0f-bf2167c7e456)<br>14조 김국현 - [과제]특강 신청하기
+# 14조 김국현 - [과제]특강 신청하기
+
+### 아키텍처와 테스트에 집중하며, 서비스의 백엔드 서버 구축
+
+---
+
+## Description
+
+- `특강 신청 서비스`를 구현해 봅니다.
+- 항해 플러스 토요일 특강을 신청할 수 있는 서비스를 개발합니다.
+- 특강 신청 및 신청자 목록 관리를 RDBMS를 이용해 관리할 방법을 고민합니다.
+
+---
 
 ## 데이터베이스 스키마
 
@@ -20,5 +32,9 @@
 - `아이디(id)`: 예약의 고유 식별자 (기본 키)
 - `사용자 아이디(userId)`: 예약을 한 사용자의 식별자
 - `시간테이블(lectureTimeTable)`: 예약이 이루어진 강의시간테이블 (외래 키)
+
+---
+
+## ERD
 
 ![image](https://github.com/hanghae-plus-backend/gukhyeon-special-lecture/assets/57578975/2e871f1c-9aa6-475f-827d-20bca33d4c18)
