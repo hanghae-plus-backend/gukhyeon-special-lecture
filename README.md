@@ -1,4 +1,4 @@
-<br>14조 김국현 - [과제]특강 신청하기
+![image](https://github.com/hanghae-plus-backend/gukhyeon-special-lecture/assets/57578975/944d64fa-bcc4-479a-af0f-bf2167c7e456)<br>14조 김국현 - [과제]특강 신청하기
 
 ## 데이터베이스 스키마
 
@@ -21,3 +21,4 @@
 - `사용자 아이디(userId)`: 예약을 한 사용자의 식별자
 - `시간테이블(lectureTimeTable)`: 예약이 이루어진 강의시간테이블 (외래 키)
 
+![image](https://github.com/hanghae-plus-backend/gukhyeon-special-lecture/assets/57578975/2e871f1c-9aa6-475f-827d-20bca33d4c18)
